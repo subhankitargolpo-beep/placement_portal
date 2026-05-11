@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="border-bottom pb-2">Admin Dashboard</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Students</h5>
+                <h2>{{ total_students }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Companies</h5>
+                <h2>{{ total_companies }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Drives</h5>
+                <h2>{{ total_drives }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title">Applications</h5>
+                <h2>{{ total_applications }}</h2>
+            </div>
+        </div>
+    </div>
+<div class="row mb-4 justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white text-center">
+                Overall Application Status Distribution
+            </div>
+            <div class="card-body">
+                <canvas id="applicationChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <span>Registered Companies</span>
+                <form method="GET" action="{{ url_for('admin_dashboard') }}" class="d-flex m-0">
+                    <input type="text" name="search_company" class="form-control form-control-sm me-2" placeholder="Search companies...">
+                    <button type="submit" class="btn btn-sm btn-light">Search</button>
+                </form>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in companies %}
+                        <tr>
+                            <td>{{ comp.company_name }}
+                                {% if comp.is_blacklisted %}<span class="badge bg-danger">Blacklisted</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if comp.is_approved %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('approve_company', company_id=comp.id) }}" class="btn btn-sm btn-outline-success">Toggle Approve</a>
+                                <a href="{{ url_for('blacklist_company', company_id=comp.id) }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center">No companies registered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <span>Registered Students</span>
+                <form method="GET" action="{{ url_for('admin_dashboard') }}" class="d-flex m-0">
+                    <input type="text" name="search_student" class="form-control form-control-sm me-2" placeholder="Search by Name or ID...">
+                    <button type="submit" class="btn btn-sm btn-light">Search</button>
+                </form>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="#" class="text-decoration-none" style="color: #2c7a7b;" data-bs-toggle="modal" data-bs-target="#adminStudentModal{{ student.id }}">
+                            {{ student.full_name }} 
+                            <small class="badge bg-light text-dark border ms-1">View Profile</small>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Toggle Blacklist</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="2" class="text-center">No students registered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">Placement Drives</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                {% for drive in drives %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="#" class="text-decoration-none" style="color: #2c7a7b;" data-bs-toggle="modal" data-bs-target="#adminDriveModal{{ drive.id }}">
+                            {{ drive.job_title }} 
+                            <small class="badge bg-light text-dark border ms-1">View Details</small>
+                        </a>
+                    </td>
+                    <td>{{ drive.company.company_name }}</td>
+                    <td>
+                        <span class="badge {% if drive.status == 'Approved' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ drive.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('toggle_drive_status', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">Toggle Status</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center">No placement drives created yet.</td></tr>
+                {% endfor %}
+            </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('applicationChart').getContext('2d');
+        
+        const applicationChart = new Chart(ctx, {
+            type: 'doughnut', // 'pie' or 'bar' also work nicely!
+            data: {
+                labels: ['Applied', 'Shortlisted', 'Selected', 'Rejected'],
+                datasets: [{
+                    label: 'Number of Students',
+                    // We dynamically inject the data from Flask right here!
+                    data: [
+                        {{ chart_data['Applied'] }},
+                        {{ chart_data['Shortlisted'] }},
+                        {{ chart_data['Selected'] }},
+                        {{ chart_data['Rejected'] }}
+                    ],
+                    backgroundColor: [
+                        '#6c757d', // Secondary (Grey) for Applied
+                        '#0d6efd', // Primary (Blue) for Shortlisted
+                        '#198754', // Success (Green) for Selected
+                        '#dc3545'  // Danger (Red) for Rejected
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% for student in students %}
+<div class="modal fade" id="adminStudentModal{{ student.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card p-0">
+            <div class="modal-body p-4">
+                <div class="row">
+                    
+                    <div class="col-md-8 border-end pe-4">
+                        <h5 class="text-muted mb-4">Student Profile</h5>
+                        
+                        <p class="mb-2"><strong>Student Name:</strong> {{ student.full_name }}</p>
+                        <p class="mb-2"><strong>Department:</strong><br> {{ student.department or 'Not specified' }}</p>
+                        <p class="mb-2"><strong>Top Skills:</strong><br> {{ student.skills or 'Not specified' }}</p>
+                        
+                        <div class="mt-4">
+                            {% if student.resume_file %}
+                                <a href="{{ url_for('static', filename='resumes/' + student.resume_file) }}" target="_blank" class="btn btn-outline-primary me-2 px-4">View Resume</a>
+                            {% else %}
+                                <button class="btn btn-secondary me-2 px-4" disabled>No Resume</button>
+                            {% endif %}
+                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex flex-column align-items-center justify-content-center text-center">
+                        <img src="https://ui-avatars.com/api/?name={{ student.full_name }}&background=random&color=fff&size=120" class="rounded-circle shadow-sm mb-3" alt="Student Avatar">
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% for drive in drives %}
+<div class="modal fade" id="adminDriveModal{{ drive.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card p-0"> 
+            <div class="modal-body p-4">
+                <div class="row">
+                    
+                    <div class="col-md-8 border-end pe-4">
+                        <h4 class="fw-bold mb-4 text-dark">Drive ID: {{ drive.id }}</h4>
+                        
+                        <p class="mb-2"><span class="text-muted">Job Title</span><br><strong>{{ drive.job_title }}</strong></p>
+                        
+                        <p class="mb-2"><span class="text-muted">Job Description</span><br>
+                        {{ drive.job_description }}<br>
+                        <small class="text-primary">Eligibility: {{ drive.eligibility_criteria }}</small></p>
+                        
+                        <p class="mb-4"><span class="text-muted">Deadline:</span> {{ drive.application_deadline.strftime('%Y-%m-%d %H:%M') }}</p>
+                        
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex flex-column align-items-center justify-content-center text-center">
+                        <img src="https://ui-avatars.com/api/?name={{ drive.company.company_name }}&background=38a3a5&color=fff&size=120&rounded=true" alt="Company Logo" class="mb-3 shadow-sm">
+                        <h5 class="fw-bold text-uppercase text-secondary">{{ drive.company.company_name }}</h5>
+                        
+                        <span class="badge mt-2 {% if drive.status == 'Approved' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            Status: {{ drive.status }}
+                        </span>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

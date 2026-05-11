@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2>Applications for: {{ drive.job_title }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('company_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-5">
+    <div class="card-header bg-info text-dark fw-bold">
+        Review Applications
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Profile Details</th>
+                    <th>Resume</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="#" class="text-decoration-none" style="color: #2c7a7b;" data-bs-toggle="modal" data-bs-target="#studentModal{{ app.id }}">
+                            {{ app.student.full_name }} 
+                            <small class="badge bg-light text-dark border ms-1">View Details</small>
+                        </a>
+                    </td>
+                    <td>
+                        <small class="d-block"><strong>Dept:</strong> {{ app.student.department or 'Not specified' }}</small>
+                        <small class="d-block"><strong>Skills:</strong> {{ app.student.skills or 'Not specified' }}</small>
+                    </td>
+                    <td>
+                        {% if app.student.resume_file %}
+                            <a href="{{ url_for('static', filename='resumes/' + app.student.resume_file) }}" target="_blank" class="btn btn-sm btn-outline-primary">View Resume</a>
+                        {% else %}
+                            <span class="badge bg-light text-muted border">No Resume</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if app.status == 'Selected' %}bg-success
+                            {% elif app.status == 'Shortlisted' %}bg-primary
+                            {% elif app.status == 'Rejected' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ app.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('update_application', app_id=app.id) }}" class="d-flex align-items-center m-0">
+                            <select name="status" class="form-select form-select-sm me-2" required>
+                                <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                                <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center py-4">No applications received yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% for app in applications %}
+<div class="modal fade" id="studentModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card p-0">
+            <div class="modal-body p-4">
+                <div class="row">
+                    
+                    <div class="col-md-8 border-end pe-4">
+                        <h5 class="text-muted mb-4">Student Application</h5>
+                        
+                        <p class="mb-2"><strong>Student Name:</strong> {{ app.student.full_name }}</p>
+                        <p class="mb-2"><strong>Department:</strong><br> {{ app.student.department or 'Not specified' }}</p>
+                        <p class="mb-2"><strong>Top Skills:</strong><br> {{ app.student.skills or 'Not specified' }}</p>
+                        <p class="mb-2 mt-4"><strong>Drive:</strong> Drive {{ drive.id }}</p>
+                        <p class="mb-4"><strong>Job Title:</strong> {{ drive.job_title }}</p>
+                        
+                        <div class="mt-4">
+                            {% if app.student.resume_file %}
+                                <a href="{{ url_for('static', filename='resumes/' + app.student.resume_file) }}" target="_blank" class="btn btn-outline-primary me-2 px-4">View Resume</a>
+                            {% else %}
+                                <button class="btn btn-secondary me-2 px-4" disabled>No Resume</button>
+                            {% endif %}
+                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Back</button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex align-items-center justify-content-center">
+                        <img src="https://ui-avatars.com/api/?name={{ app.student.full_name }}&background=random&color=fff&size=120" class="rounded-circle shadow-sm" alt="Student Avatar">
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

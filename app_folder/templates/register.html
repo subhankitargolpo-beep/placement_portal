@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-6">
+        <div class="glass-card">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold" style="color: #2c7a7b;">Create an Account</h3>
+                <p class="text-muted">Join the Placement Portal today</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="mb-3">
+                    <label class="form-label text-secondary fw-semibold">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Choose a username" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-secondary fw-semibold">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Create a strong password" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-secondary fw-semibold">Register As</label>
+                    <select name="role" class="form-select" required>
+                        <option value="" disabled selected>Select your role...</option>
+                        <option value="student">Student</option>
+                        <option value="company">Company</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-secondary fw-semibold">Full Name / Company Name</label>
+                    <input type="text" name="display_name" class="form-control" placeholder="Enter your full name or organization name" required>
+                    <small class="text-muted mt-1 d-block">Students: Enter your full name. Companies: Enter your organization name.</small>
+                </div>
+                
+                <button type="submit" class="btn btn-custom w-100 py-2 fs-5 fw-bold">Register</button>
+                
+                <div class="text-center mt-4">
+                    <span class="text-muted">Already have an account?</span> 
+                    <a href="{{ url_for('login') }}" class="text-decoration-none fw-bold" style="color: #38a3a5;">Login here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

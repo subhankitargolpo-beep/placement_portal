@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="border-bottom pb-2">Welcome, {{ student.full_name }}</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">My Profile</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_profile') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Department / Major</label>
+                        <input type="text" name="department" class="form-control" value="{{ student.department or '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Top Skills</label>
+                        <input type="text" name="skills" class="form-control" value="{{ student.skills or '' }}" placeholder="e.g., Python, Flask, SQL" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Resume (PDF)</label>
+                        <input type="file" name="resume" class="form-control" accept=".pdf">
+                        {% if student.resume_file %}
+                            <small class="text-success d-block mt-1">✓ Resume uploaded: {{ student.resume_file }}</small>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">My Application History</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applied_apps %}
+                        <tr>
+                            <td>{{ app.drive.company.company_name }}</td>
+                            <td>{{ app.drive.job_title }}</td>
+                            <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if app.status == 'Selected' %}bg-success
+                                    {% elif app.status == 'Shortlisted' %}bg-primary
+                                    {% elif app.status == 'Rejected' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ app.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center">You haven't applied to any drives yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <span>Available Placement Drives</span>
+                <form method="GET" action="{{ url_for('student_dashboard') }}" class="d-flex m-0">
+                    <input type="text" name="search_job" class="form-control form-control-sm me-2" placeholder="Search jobs...">
+                    <button type="submit" class="btn btn-sm btn-light text-success fw-bold">Search</button>
+                </form>
+            </div> 
+
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for drive in available_drives %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <strong class="text-primary">{{ drive.job_title }}</strong><br>
+                            <span class="text-muted">{{ drive.company.company_name }}</span>
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#driveModal{{ drive.id }}">
+                            View Details
+                        </button>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">
+                        No new approved drives available at the moment. Check back later!
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </div> </div> {% for drive in available_drives %}
+<div class="modal fade" id="driveModal{{ drive.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card p-0"> 
+            <div class="modal-body p-4">
+                <div class="row">
+                    
+                    <div class="col-md-8 border-end pe-4">
+                        <h4 class="fw-bold mb-4 text-dark">Drive {{ drive.id }}</h4>
+                        
+                        <p class="mb-2"><span class="text-muted">Job Title</span><br><strong>{{ drive.job_title }}</strong></p>
+                        
+                        <p class="mb-2"><span class="text-muted">Job Description</span><br>
+                        {{ drive.job_description }}<br>
+                        <small class="text-primary">Eligibility: {{ drive.eligibility_criteria }}</small></p>
+                        
+                        <p class="mb-2"><span class="text-muted">Salary:</span> Not Disclosed</p>
+                        <p class="mb-4"><span class="text-muted">Location:</span> Remote / On-site</p>
+                        
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary me-3" data-bs-dismiss="modal">Go Back</button>
+                            <form method="POST" action="{{ url_for('apply_drive', drive_id=drive.id) }}" class="m-0">
+                                <button type="submit" class="btn btn-custom">Apply Now</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex flex-column align-items-center justify-content-center text-center">
+                        <img src="https://ui-avatars.com/api/?name={{ drive.company.company_name }}&background=38a3a5&color=fff&size=120&rounded=true" alt="Company Logo" class="mb-3 shadow-sm">
+                        <h5 class="fw-bold text-uppercase text-secondary">{{ drive.company.company_name }}</h5>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

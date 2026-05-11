@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Drive Details</h4>
+                <a href="javascript:history.back()" class="btn btn-sm btn-outline-light">Go Back</a>
+            </div>
+            <div class="card-body">
+                <h2 class="card-title text-primary">{{ drive.job_title }}</h2>
+                <h5 class="text-muted mb-4">{{ drive.company.company_name }}</h5>
+                
+                <h6 class="fw-bold border-bottom pb-1">Job Description</h6>
+                <p class="mb-4">{{ drive.job_description }}</p>
+                
+                <h6 class="fw-bold border-bottom pb-1">Eligibility Criteria</h6>
+                <p class="mb-4">{{ drive.eligibility_criteria }}</p>
+                
+                <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                    <strong>Deadline:</strong> {{ drive.application_deadline.strftime('%Y-%m-%d %H:%M') }}
+                    
+                    {% if current_user.role == 'student' %}
+                        <form method="POST" action="{{ url_for('apply_drive', drive_id=drive.id) }}" class="m-0">
+                            <button type="submit" class="btn btn-success btn-lg shadow">Apply Now</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
